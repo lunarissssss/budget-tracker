@@ -1,0 +1,17 @@
+{% from "_m.html" import ic with context %}<!doctype html>
+<html lang="{{ lang }}" data-theme="auto">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{% block title %}{% endblock %} · Budget Tracker</title>
+<link rel="manifest" href="/static/manifest.webmanifest" crossorigin="use-credentials"><link rel="apple-touch-icon" href="/static/icon-192.png"><meta name="theme-color" content="#0A0D12">
+<link rel="stylesheet" href="/static/style.css">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('theme')||'auto'}catch(e){}</script></head>
+<body><div class="app">
+<nav class="nav" aria-label="Main">
+{% for href,icn,key in [('/','home','home'),('/transactions','list','tx'),('/add','plus','add'),('/rekap','chart','rekap'),('/assets','wallet','assets')] %}<a href="{{ href }}" class="{{ 'on' if path==href or (href!='/' and path.startswith(href)) }}{{ ' plus' if key=='add' }}" aria-label="{{ t(key) }}">{{ ic(icn) }}<span class="lbl">{{ t(key) }}</span></a>
+{% endfor %}</nav>
+<main>
+<header class="top"><select id="per" aria-label="{{ t('period') }}">{% for p in periods %}<option value="{{ p.id }}" {{ 'selected' if p.id==per.id }}>{{ p.name }} · {{ p.start.strftime('%d/%m') }}–{{ p.end.strftime('%d/%m') }}</option>{% endfor %}</select>
+<div class="tools"><a class="mini" href="/lang/{{ 'en' if lang=='id' else 'id' }}" aria-label="Language">{{ 'EN' if lang=='id' else 'ID' }}</a><button class="mini" id="theme" aria-label="Theme">{{ ic('sun') }}</button><a class="mini" href="/settings" aria-label="{{ t('settings') }}">{{ ic('gear') }}</a></div></header>
+<h1>{% block h1 %}{{ self.title() }}{% endblock %}</h1>
+{% block body %}{% endblock %}
+</main></div><script src="/static/app.js"></script></body></html>

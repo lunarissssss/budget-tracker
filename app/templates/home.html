@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% from "_m.html" import tile, row with context %}
+{% block title %}{{ t('home') }}{% endblock %}
+{% block body %}
+<section class="top4">
+<div class="hero"><div class="sm">{{ t('unmoved') }}{% if per.landing %} ({{ per.landing.name }}){% endif %}</div><div class="big">{{ sm.unmoved|rp(lang) }}</div><div class="pills"><span>{{ t('income') }} {{ sm.income|rp(lang) }}</span><span>{{ t('moved') }} {{ sm.moved|rp(lang) }}</span></div></div>
+<div class="k stat"><span>{{ t('spent') }}</span><b>{{ sm.paid|rp(lang) }}</b></div>
+<div class="k stat"><span>{{ t('planned') }}</span><b>{{ sm.planned|rp(lang) }}</b></div>
+<div class="k stat"><span>{{ t('net') }}</span><b>{{ sm.net|rp(lang) }}</b></div>
+</section>
+<section class="cols">
+<div class="k pad"><h2>{{ t('daily') }}</h2><div class="bars" style="margin-top:12px">{% for b in bars %}<i class="{{ 'pk' if b.pk }}" style="height:{{ b.h }}%" title="{{ b.d.strftime('%d/%m') }} · {{ b.total|rp(lang) }}"></i>{% endfor %}</div><div class="axis"><span>{{ per.start.strftime('%d/%m') }}</span><span>{{ per.end.strftime('%d/%m') }}</span></div></div>
+<div><div class="sh"><h2>{{ t('accounts') }} · {{ total|rp(lang) }}</h2><a class="lnk" href="/assets">{{ t('see_all') }}</a></div><div class="accs">{% for b in bal %}<div class="k a"><div><span>{{ b.a.name }}</span><b>{{ b.balance|rp(lang) }}</b></div>{{ tile(b.a) }}</div>{% endfor %}</div></div>
+</section>
+<section class="cols eq">
+<div><div class="sh"><h2>{{ t('recent') }}</h2><a class="lnk" href="/transactions">{{ t('see_all') }}</a></div><div class="k">{% for x in recent %}{{ row(x) }}{% else %}<p class="empty">{{ t('none') }}</p>{% endfor %}</div></div>
+<div><div class="sh"><h2>{{ t('planned_unpaid') }}</h2><span class="mu">{{ sm.planned|rp(lang) }}</span></div><div class="k">{% for x in plan %}{{ row(x) }}{% else %}<p class="empty">{{ t('none') }}</p>{% endfor %}</div></div>
+</section>
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% from "_m.html" import row with context %}
+{% block title %}{{ t('tx') }}{% endblock %}
+{% block body %}
+<div class="chips">{% for k,lb in [('all','all'),('paid','paid'),('planned','planned')] %}<a class="c{{ ' s' if status==k }}" href="/transactions?status={{ k }}">{{ t(lb) }}</a>{% endfor %}</div>
+{% if status!='planned' %}{% for d,tot,xs in groups %}<div class="sh mu" style="font-size:13px;margin-top:8px"><span>{{ d.strftime('%d/%m/%Y') if d else '—' }}</span><span>{{ tot|rp(lang) }}</span></div><div class="k">{% for x in xs %}{{ row(x) }}{% endfor %}</div>{% else %}<p class="empty">{{ t('none') }}</p>{% endfor %}{% endif %}
+{% if status!='paid' %}<div class="sh mu" style="font-size:13px;margin-top:20px"><span>{{ t('planned_unpaid') }}</span><span>{{ planned_sum|rp(lang) }}</span></div>
+<div class="k">{% for x in planned %}<details><summary>{{ row(x, false) }}</summary><form class="dbody row2" method="post" action="/tx/{{ x.id }}/pay"><select name="account_id" aria-label="{{ t('account') }}">{% for a in accounts %}<option value="{{ a.id }}" {{ 'selected' if (x.account_id or per.landing_id)==a.id }}>{{ a.name }}</option>{% endfor %}</select><input type="date" name="date" value="{{ today.isoformat() }}" aria-label="{{ t('date') }}"><button class="btn pri" type="submit">{{ t('pay') }}</button><a class="btn" href="/tx/{{ x.id }}">{{ t('edit') }}</a></form></details>{% else %}<p class="empty">{{ t('none') }}</p>{% endfor %}</div>{% endif %}
+{% endblock %}

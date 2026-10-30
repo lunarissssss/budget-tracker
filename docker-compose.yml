@@ -1,0 +1,15 @@
+services:
+  app:
+    build: .
+    container_name: budget-tracker
+    restart: unless-stopped
+    user: "${PUID:-1000}:${PGID:-1000}"
+    ports:
+      - "127.0.0.1:8000:8000"   # hanya localhost; akses dari HP lewat `tailscale serve`
+    environment:
+      TZ: Asia/Jakarta
+      APP_PASSWORD: ${APP_PASSWORD:-}                 # opsional: kunci dengan password (HTTP Basic)
+      RATE_REFRESH_MINUTES: ${RATE_REFRESH_MINUTES:-15}
+    volumes:
+      - ./data:/data                                  # database SQLite ada di sini (backup = copy folder ini)
+      - ./logos:/app/app/static/logos:ro              # taruh logo akun di sini, mis. seabank.png

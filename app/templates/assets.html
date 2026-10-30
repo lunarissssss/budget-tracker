@@ -1,0 +1,37 @@
+{% extends "base.html" %}{% from "_m.html" import tile with context %}
+{% block title %}{{ t('assets') }}{% endblock %}
+{% block body %}
+<div class="hero" style="margin-bottom:16px"><div class="sm">{{ t('total_assets') }}</div><div class="big">{{ total|rp(lang) }}</div></div>
+<div class="accs" style="margin-bottom:8px">{% for b in bal %}<div class="k a"><div><span>{{ b.a.name }}</span><b>{{ b.balance|rp(lang) }}</b></div>{{ tile(b.a) }}</div>{% endfor %}</div>
+<div class="k" style="margin-top:16px">{% for b in bal if b.a.kind!='crypto' %}<details><summary class="r">{{ tile(b.a) }}<div class="t"><b>{{ b.a.name }}</b><span>{{ t('reconcile') }}</span></div><b>{{ b.ledger|rp(lang) }}</b></summary><form class="dbody row2" method="post" action="/assets/reconcile/{{ b.a.id }}"><input class="money" name="actual" inputmode="numeric" placeholder="{{ t('actual') }}" aria-label="{{ t('actual') }}" required><button class="btn" type="submit">{{ t('sync') }}</button></form></details>{% endfor %}</div>
+
+<h2 class="g">{{ t('split_title') }}</h2>
+{% if per.landing %}<form class="k split" method="post" action="/assets/split" data-split data-income="{{ per.income }}">
+<div class="r" style="justify-content:space-between"><span class="mu">{{ t('income_to') }} <b>{{ per.landing.name }}</b></span><b>{{ per.income|rp(lang) }}</b></div>
+{% for a in accounts if a.id!=per.landing_id %}<label class="r">{{ tile(a) }}<span class="t">{{ a.name }}</span><input class="money" name="amt_{{ a.id }}" inputmode="numeric" value="{{ split.get(a.id, '') }}" placeholder="0"></label>{% endfor %}
+<div class="sum" style="margin:12px"><div><span>{{ t('moved') }}</span><b id="moved">{{ sm.moved|rp(lang) }}</b></div><div class="lg"><span>{{ t('left_in') }} {{ per.landing.name }}</span><b id="left">{{ sm.unmoved|rp(lang) }}</b></div></div>
+<div style="padding:0 12px 12px"><button class="btn pri" type="submit">{{ t('save_split') }}</button></div></form>
+{% else %}<p class="empty k">{{ t('no_landing') }}</p>{% endif %}
+
+<h2 class="g">{{ t('transfer') }}</h2>
+<form class="k pad form" method="post" action="/assets/transfer" style="max-width:none">
+<div class="row2"><label class="fld"><span>{{ t('from') }}</span><select name="from_id">{% for a in accounts %}<option value="{{ a.id }}" {{ 'selected' if a.id==per.landing_id }}>{{ a.name }}</option>{% endfor %}</select></label>
+<label class="fld"><span>{{ t('to') }}</span><select name="to_id">{% for a in accounts %}<option value="{{ a.id }}">{{ a.name }}</option>{% endfor %}</select></label>
+<label class="fld"><span>{{ t('amount') }}</span><input class="money" name="amount" inputmode="numeric" required></label></div>
+<label class="fld"><span>{{ t('note') }}</span><input name="note" maxlength="120"></label><div><button class="btn" type="submit">{{ t('transfer_btn') }}</button></div></form>
+{% if transfers %}<div class="k" style="margin-top:12px">{% for x in transfers %}<div class="r"><div class="t"><b>{{ x.src.name }} → {{ x.dst.name }}</b><span>{{ x.date.strftime('%d/%m') }} · {{ x.kind }}{{ ' · ' ~ x.note if x.note }}</span></div><b>{{ x.amount|rp(lang) }}</b><form method="post" action="/assets/transfer/{{ x.id }}/delete" style="margin:0"><button class="mini" aria-label="{{ t('delete') }}">✕</button></form></div>{% endfor %}</div>{% endif %}
+
+<h2 class="g">{{ t('crypto') }}</h2>
+<div class="k"><div class="r" style="justify-content:space-between"><span class="mu">USD → IDR</span><b>{{ ct.fx|rp(lang) if ct.fx else '—' }}</b></div>
+<div class="r" style="justify-content:space-between"><span class="mu">{{ t('updated') }}</span><span>{{ ct.updated.strftime('%d/%m %H:%M') if ct.updated else t('never') }}</span></div>
+{% if ct.rows %}<table><thead><tr><th>{{ t('symbol') }}</th><th class="n">{{ t('qty') }}</th><th class="n">USD</th><th class="n">IDR</th><th></th></tr></thead><tbody>
+{% for r in ct.rows %}<tr><td>{{ r.h.symbol }}</td><td class="n">{{ r.h.quantity }}</td><td class="n">{{ '%.4f'|format(r.price) if r.price is not none else t('no_price') }}</td><td class="n">{{ r.idr|rp(lang) if r.idr is not none else '—' }}</td><td class="n"><form method="post" action="/assets/holding/{{ r.h.id }}/delete" style="margin:0"><button class="mini" aria-label="{{ t('delete') }}">✕</button></form></td></tr>{% endfor %}
+<tr><td><b>{{ t('total') }}</b></td><td></td><td class="n"><b>{{ '%.2f'|format(ct.usd) }}</b></td><td class="n"><b>{{ ct.idr|rp(lang) }}</b></td><td></td></tr></tbody></table>{% endif %}
+</div>
+<form class="k pad form" method="post" action="/assets/holding" style="max-width:none;margin-top:12px"><div class="row2">
+<label class="fld"><span>{{ t('symbol') }} (USDT, BTC, ETH…)</span><input name="symbol" required maxlength="20" autocapitalize="characters"></label>
+<label class="fld"><span>{{ t('qty') }}</span><input name="quantity" inputmode="decimal" required></label>
+<label class="fld"><span>{{ t('manual_price') }}</span><input name="manual_usd" inputmode="decimal"></label></div>
+<div class="row2"><button class="btn pri" type="submit">{{ t('add_holding') }}</button></div></form>
+<form method="post" action="/assets/refresh" style="margin-top:12px"><button class="btn" type="submit">{{ t('refresh') }}</button></form>
+{% endblock %}

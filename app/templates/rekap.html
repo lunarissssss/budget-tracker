@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ t('rekap') }}{% endblock %}
+{% block body %}
+<div class="k tabs">{% for k,lb in [('daily','daily_tab'),('category','category_tab'),('account','account_tab')] %}<a class="{{ 's' if view==k }}" href="/rekap?view={{ k }}">{{ t(lb) }}</a>{% endfor %}</div>
+<div class="k" style="margin-bottom:16px">{% for lb,v in [('spent',sm.paid),('planned',sm.planned),('net',sm.net),('income',sm.income)] %}<div class="r" style="justify-content:space-between"><span class="mu">{{ t(lb) }}</span><b>{{ v|rp(lang) }}</b></div>{% endfor %}</div>
+{% if view=='daily' %}
+<div class="k pad"><h2>{{ t('daily') }}</h2><div class="bars" style="margin-top:12px">{% for b in bars %}<i class="{{ 'pk' if b.pk }}" style="height:{{ b.h }}%" title="{{ b.d.strftime('%d/%m') }} · {{ b.total|rp(lang) }}"></i>{% endfor %}</div><div class="axis"><span>{{ per.start.strftime('%d/%m') }}</span><span>{{ per.end.strftime('%d/%m') }}</span></div></div>
+<div class="k" style="margin-top:16px"><table><thead><tr><th>{{ t('date') }}</th><th class="n">{{ t('spent') }}</th></tr></thead><tbody>{% for b in bars %}<tr><td>{{ b.d.strftime('%d/%m') }}</td><td class="n {{ 'neg' if b.total }}">{{ b.total|rp(lang) }}</td></tr>{% endfor %}</tbody></table></div>
+{% else %}<div class="k">{% for g in (cats if view=='category' else accs) %}<div class="r" style="display:block"><div style="display:flex;justify-content:space-between"><span>{{ g.name }}</span><b>{{ g.total|rp(lang) }} · {{ g.pct }}%</b></div><div class="hb"><i style="width:{{ g.pct }}%"></i></div></div>{% else %}<p class="empty">{{ t('none') }}</p>{% endfor %}</div>{% endif %}
+<div class="row2" style="margin-top:16px"><a class="btn" href="/export?fmt=xlsx">Excel</a><a class="btn" href="/export?fmt=csv">CSV</a></div>
+{% endblock %}

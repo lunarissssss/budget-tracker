@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ t('settings') }}{% endblock %}
+{% block body %}
+{% macro acc_opts(sel) %}<option value="">—</option>{% for a in accounts %}<option value="{{ a.id }}" {{ 'selected' if sel==a.id }}>{{ a.name }}</option>{% endfor %}{% endmacro %}
+<h2>{{ t('export') }}</h2><div class="row2" style="margin:10px 0 0"><a class="btn" href="/export?fmt=xlsx&scope=period">Excel · {{ t('export_period') }}</a><a class="btn" href="/export?fmt=csv&scope=period">CSV · {{ t('export_period') }}</a><a class="btn" href="/export?fmt=xlsx&scope=all">Excel · {{ t('export_all') }}</a><a class="btn" href="/export?fmt=csv&scope=all">CSV · {{ t('export_all') }}</a></div>
+
+<h2 class="g">{{ t('periods') }}</h2>
+<div class="k">{% for p in periods %}<details><summary class="r"><div class="t"><b>{{ p.name }}</b><span>{{ p.start.strftime('%d/%m/%Y') }} – {{ p.end.strftime('%d/%m/%Y') }}</span></div><b>{{ p.income|rp(lang) }}</b></summary>
+<form class="dbody form" method="post" action="/settings/period" style="max-width:none"><input type="hidden" name="pid" value="{{ p.id }}">
+<div class="row2"><label class="fld"><span>{{ t('name') }}</span><input name="name" value="{{ p.name }}"></label><label class="fld"><span>{{ t('income') }}</span><input class="money" name="income" inputmode="numeric" value="{{ p.income }}"></label></div>
+<div class="row2"><label class="fld"><span>{{ t('start') }}</span><input type="date" name="start" value="{{ p.start.isoformat() }}" required></label><label class="fld"><span>{{ t('end') }}</span><input type="date" name="end" value="{{ p.end.isoformat() }}" required></label>
+<label class="fld"><span>{{ t('landing') }}</span><select name="landing_id">{{ acc_opts(p.landing_id) }}</select></label></div><div><button class="btn pri" type="submit">{{ t('save') }}</button></div></form></details>{% endfor %}</div>
+<details class="k" style="margin-top:12px"><summary class="r"><b>+ {{ t('new_period') }}</b></summary>
+<form class="dbody form" method="post" action="/settings/period" style="max-width:none">
+<div class="row2"><label class="fld"><span>{{ t('name') }}</span><input name="name" placeholder="Nov"></label><label class="fld"><span>{{ t('income') }}</span><input class="money" name="income" inputmode="numeric"></label></div>
+<div class="row2"><label class="fld"><span>{{ t('start') }}</span><input type="date" name="start" required></label><label class="fld"><span>{{ t('end') }}</span><input type="date" name="end" required></label>
+<label class="fld"><span>{{ t('landing') }}</span><select name="landing_id">{{ acc_opts(per.landing_id) }}</select></label></div>
+<div class="chips"><label class="chip"><input type="checkbox" name="copy_recurring" value="1" checked><span>{{ t('copy_recurring') }}</span></label></div><div><button class="btn pri" type="submit">{{ t('save') }}</button></div></form></details>
+
+<h2 class="g">{{ t('accounts') }}</h2>
+<div class="k">{% for a in accounts %}<details><summary class="r"><span class="l" style="background:{{ a.color }}">{{ a.initials }}</span><div class="t"><b>{{ a.name }}</b><span>{{ a.kind }}</span></div><b>{{ a.opening|rp(lang) }}</b></summary>
+<form class="dbody form" method="post" action="/settings/account" style="max-width:none"><input type="hidden" name="aid" value="{{ a.id }}">
+<div class="row2"><label class="fld"><span>{{ t('name') }}</span><input name="name" value="{{ a.name }}" required></label><label class="fld"><span>{{ t('initials') }}</span><input name="initials" value="{{ a.initials }}" maxlength="3"></label></div>
+<div class="row2"><label class="fld"><span>{{ t('kind') }}</span><select name="kind">{% for k in ['bank','ewallet','crypto'] %}<option {{ 'selected' if a.kind==k }}>{{ k }}</option>{% endfor %}</select></label><label class="fld"><span>{{ t('color') }}</span><input type="color" name="color" value="{{ a.color }}"></label><label class="fld"><span>{{ t('opening') }}</span><input class="money" name="opening" inputmode="numeric" value="{{ a.opening }}"></label></div>
+<div><button class="btn pri" type="submit">{{ t('save') }}</button></div></form></details>{% endfor %}</div>
+<details class="k" style="margin-top:12px"><summary class="r"><b>+ {{ t('new_account') }}</b></summary>
+<form class="dbody form" method="post" action="/settings/account" style="max-width:none"><div class="row2"><label class="fld"><span>{{ t('name') }}</span><input name="name" required></label><label class="fld"><span>{{ t('initials') }}</span><input name="initials" maxlength="3"></label></div>
+<div class="row2"><label class="fld"><span>{{ t('kind') }}</span><select name="kind"><option>bank</option><option>ewallet</option><option>crypto</option></select></label><label class="fld"><span>{{ t('color') }}</span><input type="color" name="color" value="#475569"></label><label class="fld"><span>{{ t('opening') }}</span><input class="money" name="opening" inputmode="numeric"></label></div>
+<div><button class="btn pri" type="submit">{{ t('save') }}</button></div></form></details>
+
+<h2 class="g">{{ t('categories') }}</h2>
+<div class="chips">{% for c in categories %}<span class="c">{{ c.name }}</span>{% endfor %}</div>
+<form class="row2" method="post" action="/settings/category"><input name="name" placeholder="{{ t('new_category') }}" required aria-label="{{ t('new_category') }}"><button class="btn" type="submit" style="flex:none">+</button></form>
+
+<h2 class="g">{{ t('templates') }}</h2>
+<div class="k">{% for q in tpls %}<div class="r"><div class="t"><b>{{ q.label }}</b><span>{{ q.category.name if q.category else '—' }}</span></div><b>{{ q.amount|rp(lang) }}</b><form method="post" action="/settings/template/{{ q.id }}/delete" style="margin:0"><button class="mini" aria-label="{{ t('delete') }}">✕</button></form></div>{% else %}<p class="empty">{{ t('none') }}</p>{% endfor %}</div>
+<form class="k pad form" method="post" action="/settings/template" style="max-width:none;margin-top:12px"><div class="row2"><label class="fld"><span>{{ t('label') }}</span><input name="label" required></label><label class="fld"><span>{{ t('amount') }}</span><input class="money" name="amount" inputmode="numeric" required></label></div>
+<div class="row2"><label class="fld"><span>{{ t('category') }}</span><select name="category_id">{% for c in categories %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}</select></label><label class="fld"><span>{{ t('account') }}</span><select name="account_id">{{ acc_opts(per.landing_id) }}</select></label></div><div><button class="btn pri" type="submit">{{ t('save') }}</button></div></form>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ t('add') }}{% endblock %}
+{% block h1 %}{{ t('edit_title') if tx else t('add_title') }}{% endblock %}
+{% block body %}
+{% if ok %}<p class="ok" role="status">{{ t('saved') }}</p>{% endif %}
+{% if not tx and templates_ %}<h2>{{ t('quick') }}</h2><div class="chips">{% for q in templates_ %}<form method="post" action="/quick/{{ q.id }}"><button class="c" type="submit">{{ q.label }} · {{ q.amount|rp(lang) }}</button></form>{% endfor %}</div>{% endif %}
+<form method="post" action="/tx" class="form">
+<input type="hidden" name="tid" value="{{ tx.id if tx }}">
+<label class="fld"><span>{{ t('amount') }}</span><input class="big-in money" name="amount" inputmode="numeric" value="{{ tx.amount if tx }}" required placeholder="0"></label>
+{% set st = tx.status if tx else 'paid' %}{% set dv = tx.date if tx else today %}
+<div class="chips"><label class="chip"><input type="radio" name="status" value="paid" {{ 'checked' if st=='paid' }}><span>{{ t('paid') }}</span></label><label class="chip"><input type="radio" name="status" value="planned" {{ 'checked' if st=='planned' }}><span>{{ t('planned') }}</span></label><label class="chip"><input type="checkbox" name="recurring" value="1" {{ 'checked' if tx and tx.recurring }}><span>{{ t('repeat') }}</span></label></div>
+<label class="fld"><span>{{ t('date') }}</span><input type="date" name="date" value="{{ dv.isoformat() if dv else '' }}" data-today="{{ today.isoformat() }}"></label>
+{% set sa = tx.account_id if tx else per.landing_id %}
+<h2>{{ t('account') }}</h2><div class="chips"><label class="chip"><input type="radio" name="account_id" value="" {{ 'checked' if not sa }}><span>—</span></label>{% for a in accounts %}<label class="chip"><input type="radio" name="account_id" value="{{ a.id }}" {{ 'checked' if sa==a.id }}><span>{{ a.name }}</span></label>{% endfor %}</div>
+{% set sc = tx.category_id if tx else (categories[0].id if categories else None) %}
+<h2>{{ t('category') }}</h2><div class="chips">{% for c in categories %}<label class="chip"><input type="radio" name="category_id" value="{{ c.id }}" {{ 'checked' if sc==c.id }}><span>{{ c.name }}</span></label>{% endfor %}</div>
+<label class="fld"><span>{{ t('desc') }}</span><input name="description" maxlength="200" value="{{ tx.description if tx }}"></label>
+<div class="row2"><button class="btn pri" type="submit">{{ t('save') }}</button>{% if not tx %}<button class="btn" type="submit" name="again" value="1">{{ t('save_more') }}</button>{% endif %}</div>
+</form>
+{% if tx %}<form method="post" action="/tx/{{ tx.id }}/delete" style="margin-top:16px"><button class="btn del" type="submit">{{ t('delete') }}</button></form>{% endif %}
+{% endblock %}
